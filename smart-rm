@@ -23,11 +23,12 @@ list_files() {
 		fi
 
 		if [[ -d "$arg" ]]; then
-			# It's a directory - show its contents
+			# Show the directory itself
+			echo "$arg"
+			# Show contents of the directory
 			if [[ -n "$fd_cmd" ]]; then
 				"$fd_cmd" . "$arg" --hidden --no-ignore --type f --type d --color never --max-depth 1
 			else
-				echo "$arg"
 				find "$arg" -maxdepth 1 -mindepth 1 2>/dev/null || true
 			fi
 		else

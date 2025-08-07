@@ -6,27 +6,36 @@
 set -euo pipefail
 
 # Function to list files/directories with fd or fdfind, falling back to find.
+# Function to list files/directories with fd or fdfind, falling back to find.
 list_files() {
 	local args=("$@")
 
+	# Determine which command to use
+	local fd_cmd=""
 	if command -v fd >/dev/null 2>&1; then
-		# Use fd with max-depth 1 to show only direct children
-		fd . "${args[@]}" --hidden --no-ignore --type f --type d --color never --max-depth 1
+		fd_cmd="fd"
 	elif command -v fdfind >/dev/null 2>&1; then
-		# Use fdfind with max-depth 1
-		fdfind . "${args[@]}" --hidden --no-ignore --type f --type d --color never --max-depth 1
-	else
-		# Fallback to find - list each argument if it exists
-		for arg in "${args[@]}"; do
-			if [[ -e "$arg" ]]; then
-				echo "$arg"
-				# If it's a directory, show its direct contents
-				if [[ -d "$arg" ]]; then
-					find "$arg" -maxdepth 1 -mindepth 1 2>/dev/null || true
-				fi
-			fi
-		done
+		fd_cmd="fdfind"
 	fi
+
+	for arg in "${args[@]}"; do
+		if [[ ! -e "$arg" ]]; then
+			continue # Skip non-existent files
+		fi
+
+		if [[ -d "$arg" ]]; then
+			# It's a directory - show its contents
+			if [[ -n "$fd_cmd" ]]; then
+				"$fd_cmd" . "$arg" --hidden --no-ignore --type f --type d --color never --max-depth 1
+			else
+				echo "$arg"
+				find "$arg" -maxdepth 1 -mindepth 1 2>/dev/null || true
+			fi
+		else
+			# It's a file - just show the file itself
+			echo "$arg"
+		fi
+	done
 }
 
 main() {

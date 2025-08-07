@@ -6,7 +6,6 @@
 set -euo pipefail
 
 # Function to list files/directories with fd or fdfind, falling back to find.
-# Function to list files/directories with fd or fdfind, falling back to find.
 list_files() {
 	local args=("$@")
 

@@ -40,6 +40,7 @@ list_files() {
 main() {
 	# If I_UNDERSTAND_WHAT_I_AM_DOING is set, skip the safety checks.
 	if [[ "${I_UNDERSTAND_WHAT_I_AM_DOING:-}" == "1" ]]; then
+		echo "smart-rm: Skipping checks."
 		rm "$@"
 		return
 	fi
@@ -80,7 +81,11 @@ main() {
 				echo "Aborting."
 				exit 1
 			fi
+		else
+			echo "smart-rm: No valid files or directories found."
 		fi
+	else
+		echo "smart-rm: No path found."
 	fi
 	rm "$@"
 }

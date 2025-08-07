@@ -18,8 +18,8 @@ list_files() {
 	fi
 
 	for arg in "${args[@]}"; do
-		if [[ ! -e "$arg" ]]; then
-			continue # Skip non-existent files
+		if [[ ! -e "$arg" && ! -L "$arg" ]]; then
+			continue # Skip non-existent files/links
 		fi
 
 		if [[ -d "$arg" ]]; then
@@ -27,12 +27,12 @@ list_files() {
 			echo "${arg%/}/" # Append / to indicate it's a directory
 			# Show contents of the directory
 			if [[ -n "$fd_cmd" ]]; then
-				"$fd_cmd" . "$arg" --hidden --no-ignore --type f --type d --color never --max-depth 1
+				"$fd_cmd" . "$arg" --hidden --no-ignore --no-follow --type f --type d --type l --color never --max-depth 1
 			else
-				find "$arg" -maxdepth 1 -mindepth 1 2>/dev/null || true
+				find "$arg" -maxdepth 1 -mindepth 1 \( -type f -o -type d -o -type l \) 2>/dev/null || true
 			fi
 		else
-			# It's a file - just show the file itself
+			# Show the file/link itself
 			echo "$arg"
 		fi
 	done

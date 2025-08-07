@@ -18,16 +18,16 @@ A wrapper for `rm` to make it smarter and safer.
 
 1. Download the script:
 
-   ```bash
-   curl -O https://raw.githubusercontent.com/yilinfang/smart-rm/refs/heads/main/smart-rm
-   chmod +x smart-rm
-   ```
+```bash
+curl -O https://raw.githubusercontent.com/yilinfang/smart-rm/refs/heads/main/smart-rm
+chmod +x smart-rm
+```
 
 2. Move to a directory in your PATH:
 
-   ```bash
-   sudo mv smart-rm /usr/local/bin/
-   ```
+```bash
+sudo mv smart-rm /usr/local/bin/
+```
 
 3. (Optional) Create an alias in your shell configuration:
 

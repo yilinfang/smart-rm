@@ -19,7 +19,7 @@ A wrapper for `rm` to make it smarter and safer.
 1. Download the script:
 
    ```bash
-   curl -O https://raw.githubusercontent.com/yilinfang/smart-rm/main/smart-rm
+   curl -O https://raw.githubusercontent.com/yilinfang/smart-rm/refs/heads/main/smart-rm
    chmod +x smart-rm
    ```
 

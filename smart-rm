@@ -24,7 +24,7 @@ list_files() {
 
 		if [[ -d "$arg" ]]; then
 			# Show the directory itself
-			echo "$arg"
+			echo "${arg%/}/" # Append / to indicate it's a directory
 			# Show contents of the directory
 			if [[ -n "$fd_cmd" ]]; then
 				"$fd_cmd" . "$arg" --hidden --no-ignore --type f --type d --color never --max-depth 1

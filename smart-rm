@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# smart-rm - A wrapper to make `rm` safer and smarter.
+# Usage: smart-rm [OPTIONS] [FILE...] just like `rm`.
+# To bypass the check, set the environment variable I_UNDERSTAND_WHAT_I_AM_DOING to 1.
+
+set -euo pipefail
+
+# Function to list files/directories with fd or fdfind, falling back to find.
+list_files() {
+	local args=("$@")
+
+	if command -v fd >/dev/null 2>&1; then
+		# Use fd with max-depth 1 to show only direct children
+		fd . "${args[@]}" --hidden --no-ignore --type f --type d --color never --max-depth 1
+	elif command -v fdfind >/dev/null 2>&1; then
+		# Use fdfind with max-depth 1
+		fdfind . "${args[@]}" --hidden --no-ignore --type f --type d --color never --max-depth 1
+	else
+		# Fallback to find - list each argument if it exists
+		for arg in "${args[@]}"; do
+			if [[ -e "$arg" ]]; then
+				echo "$arg"
+				# If it's a directory, show its direct contents
+				if [[ -d "$arg" ]]; then
+					find "$arg" -maxdepth 1 -mindepth 1 2>/dev/null || true
+				fi
+			fi
+		done
+	fi
+}
+
+main() {
+	# If I_UNDERSTAND_WHAT_I_AM_DOING is set, skip the safety checks.
+	if [[ "${I_UNDERSTAND_WHAT_I_AM_DOING:-}" == "1" ]]; then
+		rm "$@"
+		return
+	fi
+
+	local find_args=()
+	local stop_processing_options=false
+	for arg in "$@"; do
+		if [[ "$arg" == "--" ]]; then
+			stop_processing_options=true
+			continue
+		fi
+		if [[ "$stop_processing_options" == false && "$arg" == -* ]]; then
+			continue
+		else
+			find_args+=("$arg")
+		fi
+	done
+
+	# If find_args not empty, show user what will be deleted.
+	if [[ ${#find_args[@]} -gt 0 ]]; then
+
+		# Show preview of files to be deleted (limit to 20)
+		local temp_output
+		temp_output=$(list_files "${find_args[@]}")
+		if [[ -n "$temp_output" ]]; then
+			local total_count=$(echo "$temp_output" | wc -l)
+
+			echo "The following entries will be deleted:"
+			echo "$temp_output" | head -20
+			if [[ $total_count -gt 20 ]]; then
+				echo "... and $((total_count - 20)) more entries"
+			fi
+			echo "Total: $total_count entries"
+
+			echo -n "Are you sure you want to proceed? (y/N): "
+			read -r answer
+			if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
+				echo "Aborting."
+				exit 1
+			fi
+		fi
+	fi
+	rm "$@"
+}
+
+main "$@"
